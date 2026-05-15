@@ -1,0 +1,17 @@
+node_modules/
+.env
+*.log
+.DS_Store
+
+# Build outputs
+dist/
+apps/web/dist/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Drizzle generated (keep migrations/, ignore meta if preferred)
+# drizzle/meta/
+
+# pnpm
+.pnpm-store/

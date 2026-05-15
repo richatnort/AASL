@@ -1,0 +1,21 @@
+{
+  "name": "shopping-list",
+  "private": true,
+  "scripts": {
+    "dev:api": "pnpm --filter @shopping-list/api dev",
+    "dev:web": "pnpm --filter @shopping-list/web dev",
+    "typecheck": "pnpm -r --parallel exec tsc --noEmit",
+    "test": "pnpm -r --parallel test",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "typescript": "^5.7.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "picomatch": ">=4.0.4"
+    }
+  }
+}

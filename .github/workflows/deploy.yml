@@ -1,0 +1,90 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Type check + test (GitHub-hosted runner, fast) ──────────────────────────
+  check:
+    name: Type Check & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared package
+        run: pnpm --filter @shopping-list/shared build
+
+      - name: Lint (Biome)
+        run: pnpm lint
+
+      - name: Dependency security audit
+        run: pnpm audit --audit-level=high
+
+      - name: Type check (all packages)
+        run: pnpm -r exec tsc --noEmit
+
+      - name: Run tests
+        run: pnpm -r test
+
+  # ── Deploy (self-hosted runner on your server) ──────────────────────────────
+  deploy:
+    name: Deploy
+    needs: check
+    runs-on: self-hosted                # install a GitHub Actions runner on your server
+    if: github.ref == 'refs/heads/main' # only deploy on main, not PRs
+    env:
+      COMPOSE_PROJECT_NAME: shopping-list  # match existing container names
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Copy production .env
+        run: cp /opt/shopping-list/.env .env   # adjust this path to wherever you store your .env on the server
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared package
+        run: pnpm --filter @shopping-list/shared build
+
+      - name: Build web app
+        run: pnpm --filter @shopping-list/web build
+
+      - name: Build Docker images
+        run: docker compose build --no-cache api nginx
+
+      - name: Restart services
+        run: docker compose up -d
+
+      - name: Post-deploy health check
+        run: |
+          sleep 10
+          curl --fail --silent --max-time 15 http://localhost/health \
+            | grep -q '"status"' || (echo "Health check failed" && exit 1)
+
+      - name: Clean up old images
+        run: docker image prune -f

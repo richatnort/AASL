@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - pg_backups:/backups
+    environment:
+      POSTGRES_DB: shopping
+      POSTGRES_USER: shopping
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-shopping}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgres://shopping:${DB_PASSWORD:-shopping}@db:5432/shopping
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-https://your-domain.com/auth/google/callback}
+      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ALEXA_SERVICE_URL: ${ALEXA_SERVICE_URL:-}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      PORT: 3001
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Tech/Dockerfile.nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  pg_backups:
