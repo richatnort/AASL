@@ -67,15 +67,17 @@ You need a Google OAuth client to handle sign-in. It's free and takes about five
 
 ### 3. Set up AI (optional but recommended)
 
-Without AI, the app still works — you just categorise items manually. With it, items get categorised automatically and suggestions improve over time.
+Without AI the app still works — you just categorise items manually. With it, items get categorised automatically, suggestions improve over time, and recipe imports get properly cleaned up.
 
-**Groq is what we use and recommend.** It's free, fast, and the free tier comfortably covers home-scale usage. Sign up at [console.groq.com](https://console.groq.com), grab an API key, and drop it into `GROQ_API_KEY` in your `.env`.
+**Groq is what we use and recommend.** It's free, fast, and the free tier comfortably covers home-scale usage — we've never come close to hitting a limit. Sign up at [console.groq.com](https://console.groq.com), grab an API key, and drop it into `GROQ_API_KEY` in your `.env`.
 
-The app uses `llama-3.3-70b-versatile` for categorisation and item suggestions.
+Groq (using `llama-3.3-70b-versatile`) handles three things:
 
-For recipe parsing on sites that don't have structured data, it falls back to **Google Gemini** (also free). Get a key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) and set `GEMINI_API_KEY`.
+- **Item categorisation** — when you add an item, it figures out which category it belongs to
+- **Item suggestions** — surfaces things you probably need based on what you typically buy
+- **Ingredient normalisation** — every time you import a recipe, Groq cleans up the raw ingredient strings into proper shopping list format. "4 garlic cloves, finely chopped" becomes "Garlic Cloves (4)". This runs on every import regardless of the source site.
 
-If you're running Ollama locally, set `OLLAMA_HOST` and that'll be tried first for recipe parsing before hitting the external APIs.
+For sites that don't publish their ingredients as structured data (i.e. the AI can't just read a nice clean list from the page), the app can fall back to a local **Ollama** instance to extract ingredients from the raw page text. Set `OLLAMA_HOST` in your `.env` if you want that. It's optional — most major recipe sites (BBC Good Food, AllRecipes, etc.) have structured data and don't need it.
 
 ### 4. Start the app
 
@@ -101,9 +103,8 @@ The first Google account to sign in gets admin status automatically — set `ADM
 | `PRE_APPROVED_EMAILS` | No | Comma-separated emails — gets access on first login without needing admin approval |
 | `DATABASE_URL` | Yes | Set automatically by Docker Compose if you use `DB_PASSWORD` |
 | `DB_PASSWORD` | Yes | Change this before deploying — anything is better than the default |
-| `GROQ_API_KEY` | No | Required for AI categorisation and suggestions |
-| `GEMINI_API_KEY` | No | Required for AI recipe parsing fallback |
-| `OLLAMA_HOST` | No | If you're running a local Ollama instance |
+| `GROQ_API_KEY` | No | Required for AI categorisation, suggestions, and ingredient normalisation |
+| `OLLAMA_HOST` | No | Local Ollama instance — fallback for extracting ingredients from sites without structured data |
 | `ALEXA_SERVICE_URL` | No | Only needed if you're running the Alexa companion service |
 | `TELEGRAM_BOT_TOKEN` | No | Meal reminder notifications via Telegram |
 | `TELEGRAM_CHAT_ID` | No | Target chat for Telegram notifications |
