@@ -171,7 +171,7 @@ pnpm --filter @shopping-list/api db:migrate
 
 ## Alexa integration
 
-If you have an Alexa device and want two-way list sync, the companion service is at [richatnort/alexa-lists](https://github.com/richatnort/alexa-lists). Run that separately and point `ALEXA_SERVICE_URL` at it.
+Two-way sync with an Alexa shopping list is supported but the companion service isn't public yet. If you want it, open an issue or drop me a message on GitHub.
 
 ---
 
