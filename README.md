@@ -77,8 +77,6 @@ Groq (using `llama-3.3-70b-versatile`) handles three things:
 - **Item suggestions** — surfaces things you probably need based on what you typically buy
 - **Ingredient normalisation** — every time you import a recipe, Groq cleans up the raw ingredient strings into proper shopping list format. "4 garlic cloves, finely chopped" becomes "Garlic Cloves (4)". This runs on every import regardless of the source site.
 
-For sites that don't publish their ingredients as structured data (i.e. the AI can't just read a nice clean list from the page), the app can fall back to a local **Ollama** instance to extract ingredients from the raw page text. Set `OLLAMA_HOST` in your `.env` if you want that. It's optional — most major recipe sites (BBC Good Food, AllRecipes, etc.) have structured data and don't need it.
-
 ### 4. Start the app
 
 ```bash
@@ -104,7 +102,6 @@ The first Google account to sign in gets admin status automatically — set `ADM
 | `DATABASE_URL` | Yes | Set automatically by Docker Compose if you use `DB_PASSWORD` |
 | `DB_PASSWORD` | Yes | Change this before deploying — anything is better than the default |
 | `GROQ_API_KEY` | No | Required for AI categorisation, suggestions, and ingredient normalisation |
-| `OLLAMA_HOST` | No | Local Ollama instance — fallback for extracting ingredients from sites without structured data |
 | `ALEXA_SERVICE_URL` | No | Only needed if you're running the Alexa companion service |
 | `TELEGRAM_BOT_TOKEN` | No | Meal reminder notifications via Telegram |
 | `TELEGRAM_CHAT_ID` | No | Target chat for Telegram notifications |
